@@ -4,7 +4,8 @@ import sys
 
 class bandits():
 	def __init__(self,no_bandit = 4, eps = 1, no_iter = 1000, 
-						seed = 123456, stationary = True, random = False ):
+						seed = 123456, stationary = True, random = False, starting_reward = 0
+						, weighted_aver = False, alpha = 0.1):
         
 		np.random.seed(seed)
 
@@ -13,8 +14,10 @@ class bandits():
 		self.no_iter = no_iter
 		# self.initial_reward = initial_reward
 		self.random = random
+		self.weighted_aver = weighted_aver
+		self.alpha = alpha
 
-		self.total_reward = 0
+		self.total_reward = starting_reward
 		self.individual_mean = np.zeros(self.no_bandit)
 		self.steps = 0
 		self.individual_steps = np.zeros(self.no_bandit)
@@ -58,37 +61,37 @@ class bandits():
 	    
 		if self.stationary == True:
 			prob = self.individual_prob()
-			# print("True probability distribution for the stationary case",prob)
+			print("True probability distribution for the stationary case",prob)
+
+			action_ = []
 
 			for i in range(self.no_iter):
 
 				action = self.action()
 				reward = self.distri_depen_rewa(prob)[action]
-				# print(action,reward)
-
-				# if i == 1:
-					# print("first action taken is ", action)
 
 				self.steps += 1
 				self.individual_steps[action] += 1
+
+				self.reward_after_each_step.append((self.total_reward))
+
+				if self.weighted_aver == True:
+					self.total_reward += (reward - self.total_reward)*(self.alpha)
+					self.individual_mean[action] += (reward - self.individual_mean[action])*(self.alpha)
+
+				else: 
+					self.total_reward += (reward - self.total_reward)/(self.steps)
+					self.individual_mean[action] += (reward - self.individual_mean[action])/(self.individual_steps[action])
 				
-				self.total_reward += (reward )
-				# print(self.individual_mean[action],self.individual_mean)
-
-				self.individual_mean[action] += (reward - self.individual_mean[action])/(self.individual_steps[action])
-
-				# print(self.individual_mean[action],self.individual_mean)
-				# sys.exit()
-				
-
-				self.reward_after_each_step.append(int(self.total_reward)/self.steps)
+				action_.append(action)
 			    
 		        
-			return self.reward_after_each_step, self.individual_mean
+			return self.reward_after_each_step, self.individual_mean, action_
 
 		else:
 
-			
+			action_ = []
+
 			for i in range(self.no_iter):
 
 				prob = self.individual_prob()
@@ -97,19 +100,23 @@ class bandits():
 
 				self.steps += 1
 				self.individual_steps[action] += 1
-				
-				self.total_reward += (reward )
-				# print(self.individual_mean[action],self.individual_mean)
+
+				self.reward_after_each_step.append((self.total_reward))
+
+				if self.weighted_aver == True:
+					self.total_reward += (reward - self.total_reward)*(self.alpha)
+					self.individual_mean[action] += (reward - self.individual_mean[action])*(self.alpha)
+
+				else: 
+					self.total_reward += (reward - self.total_reward)/(self.steps)
+					self.individual_mean[action] += (reward - self.individual_mean[action])/(self.individual_steps[action])
 
 				self.individual_mean[action] += (reward - self.individual_mean[action])/(self.individual_steps[action])
-
-				# print(self.individual_mean[action],self.individual_mean)
-				# sys.exit()
 				
-
-				self.reward_after_each_step.append(int(self.total_reward)/self.steps)
+				action_.append(action)
 			    
 		        
-			return self.reward_after_each_step, self.individual_mean
+			return self.reward_after_each_step, self.individual_mean, action_
+		        
 			
 		    
