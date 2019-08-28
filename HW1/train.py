@@ -3,7 +3,7 @@ from main import bandits
 import numpy as np
 
 no_bandit = 4
-no_iter = 100
+no_iter = 10
 eps = 0
 seed = np.random.randint(1,10036)
 

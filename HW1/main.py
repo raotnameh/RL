@@ -25,13 +25,13 @@ class bandits():
 
 # Prob/Mean of winning "1" for each bandit
 	def individual_prob(self):
-		return np.random.rand(self.no_bandit)
+		return np.random.uniform(0.2,.8,size = self.no_bandit)
 
  # True Reward at a particular time step or "1" and "0" at each time step or Distribution dependent reward
 	def distri_depen_rewa(self,prob):
 		out = []
 		for i in prob:
-		    out.append(np.random.choice([1,0],p=[i,1-i]))
+		    out.append(np.random.choice([1,0],p=[abs(i),abs(1-i)]))
 
 		return out # list of rewards for each arm/bamdit at a particular time step
 
@@ -58,7 +58,7 @@ class bandits():
 	    
 		if self.stationary == True:
 			prob = self.individual_prob()
-			print("True probability distribution for the stationary case",prob)
+			# print("True probability distribution for the stationary case",prob)
 
 			for i in range(self.no_iter):
 
@@ -66,13 +66,13 @@ class bandits():
 				reward = self.distri_depen_rewa(prob)[action]
 				# print(action,reward)
 
-				if i == 1:
-					print("action taken is ", action)
+				# if i == 1:
+					# print("first action taken is ", action)
 
 				self.steps += 1
 				self.individual_steps[action] += 1
 				
-				self.total_reward += reward
+				self.total_reward += (reward )
 				# print(self.individual_mean[action],self.individual_mean)
 
 				self.individual_mean[action] += (reward - self.individual_mean[action])/(self.individual_steps[action])
@@ -87,5 +87,29 @@ class bandits():
 			return self.reward_after_each_step, self.individual_mean
 
 		else:
-			raise NotImplementedError
-		    # self.prob_bandit_ = self.mean_for_each_bandit()
+
+			
+			for i in range(self.no_iter):
+
+				prob = self.individual_prob()
+				action = self.action()
+				reward = self.distri_depen_rewa(prob)[action]
+
+				self.steps += 1
+				self.individual_steps[action] += 1
+				
+				self.total_reward += (reward )
+				# print(self.individual_mean[action],self.individual_mean)
+
+				self.individual_mean[action] += (reward - self.individual_mean[action])/(self.individual_steps[action])
+
+				# print(self.individual_mean[action],self.individual_mean)
+				# sys.exit()
+				
+
+				self.reward_after_each_step.append(int(self.total_reward)/self.steps)
+			    
+		        
+			return self.reward_after_each_step, self.individual_mean
+			
+		    
