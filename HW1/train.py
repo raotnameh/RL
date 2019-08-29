@@ -38,6 +38,6 @@ if __name__ == '__main__':
 
 
 	print("optimal_action after "+str(args.iter)+" steps is : ", action[-1])
-	# plt.plot(reward)
-	# plt.plot(action)
-	# plt.show() 
+	plt.plot(reward)
+	plt.plot(action)
+	plt.show() 

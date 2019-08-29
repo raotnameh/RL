@@ -51,76 +51,38 @@ class bandits():
 			return np.random.choice(self.no_bandit)
 
 		else: raise NotImplementedError
-        
-
 
 # Forward function to implement the logic
 	def forward(self):
-	    
-		if self.stationary == True:
-			prob = self.individual_prob()
-			print("True probability distribution for the stationary case",prob)
+		optimal_action = 0
+		optimal_action_total = []
+		prob = self.individual_prob()
+		for i in range(self.no_iter):
 
-			optimal_action = 0
-			optimal_action_total = []
-
-			for i in range(self.no_iter):
-
-				action = self.action()
-				reward = self.distri_depen_rewa(prob)[action]
-
-				self.steps += 1
-				self.individual_steps[action] +=1 
-
-				self.reward_after_each_step.append((self.total_reward))
-
-				if self.weighted_aver == True:
-					self.total_reward += (reward - (self.total_reward))*(self.alpha)
-					self.individual_mean[action] += (reward - self.individual_mean[action])/(self.individual_steps[action])
-
-				else: 
-					self.total_reward += (reward - (self.total_reward))/(self.steps)
-					self.individual_mean[action] += (reward - self.individual_mean[action])/(self.individual_steps[action])
-
-				if self.reward_after_each_step[i-1] <= self.reward_after_each_step[i]:
-					optimal_action +=1
-			    
-				optimal_action_total.append(optimal_action/self.steps)
-		        
-			return self.reward_after_each_step, self.individual_mean, optimal_action_total
-
-		elif self.stationary == False:
-
-			optimal_action = 0
-			optimal_action_total = []
-
-			for i in range(self.no_iter):
-
+			if self.stationary == False:
 				prob = self.individual_prob()
-				action = self.action()
-				reward = self.distri_depen_rewa(prob)[action]
 
-				self.steps += 1
-				self.individual_steps[action] += 1
 
-				self.reward_after_each_step.append((self.total_reward))
+			action = self.action()
+			reward = self.distri_depen_rewa(prob)[action]
 
-				if self.weighted_aver == True:
-					self.total_reward += (reward - (self.total_reward))*(self.alpha)
-					self.individual_mean[action] += (reward - self.individual_mean[action])/(self.individual_steps[action])
+			self.steps += 1
+			self.individual_steps[action] +=1 
 
-				else: 
-					self.total_reward += (reward - (self.total_reward))/(self.steps)
-					self.individual_mean[action] += (reward - self.individual_mean[action])/(self.individual_steps[action])
-				
-				if self.reward_after_each_step[i-1] <= self.reward_after_each_step[i]:
-					optimal_action +=1
-			    
-				optimal_action_total.append(optimal_action/self.steps)
-		        
-			return self.reward_after_each_step, self.individual_mean, optimal_action_total
+			self.reward_after_each_step.append((self.total_reward))
 
-		else: raise NotImplementedError
-		        
-			
+			if self.weighted_aver == True:
+				self.total_reward += (reward - (self.total_reward))*(self.alpha)
+				self.individual_mean[action] += (reward - self.individual_mean[action])/(self.individual_steps[action])
+
+			else: 
+				self.total_reward += (reward - (self.total_reward))/(self.steps)
+				self.individual_mean[action] += (reward - self.individual_mean[action])/(self.individual_steps[action])
+
+			if self.reward_after_each_step[i-1] <= self.reward_after_each_step[i]:
+				optimal_action +=1
 		    
+			optimal_action_total.append(optimal_action/self.steps)
+		    
+		return self.reward_after_each_step, self.individual_mean, optimal_action_total
+        
