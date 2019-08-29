@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import sys
 
 class bandits():
-	def __init__(self,no_bandit = 4, eps = 1, no_iter = 1000, 
-						seed = 123456, stationary = True, random = False, starting_reward = 0
+	def __init__(self,no_bandit = 4, eps = 0, no_iter = 1000, 
+						seed = 123456, stationary = True, starting_reward = 0
 						, weighted_aver = False, alpha = 0.1):
         
 		np.random.seed(seed)
@@ -12,13 +12,11 @@ class bandits():
 		self.no_bandit = no_bandit
 		self.eps = eps
 		self.no_iter = no_iter
-		# self.initial_reward = initial_reward
-		self.random = random
 		self.weighted_aver = weighted_aver
 		self.alpha = alpha
 
-		self.total_reward = starting_reward
-		self.individual_mean = np.zeros(self.no_bandit)
+		self.total_reward = 0
+		self.individual_mean = np.zeros(self.no_bandit) + starting_reward
 		self.steps = 0
 		self.individual_steps = np.zeros(self.no_bandit)
 		self.reward_after_each_step = []
@@ -27,21 +25,21 @@ class bandits():
 
 
 # Prob/Mean of winning "1" for each bandit
-	def individual_prob(self):
-		return np.random.uniform(0.2,.8,size = self.no_bandit)
+	def individual_prob(self,sigma=0):
+		return np.random.uniform(-5,5,size = self.no_bandit)
 
  # True Reward at a particular time step or "1" and "0" at each time step or Distribution dependent reward
 	def distri_depen_rewa(self,prob):
 		out = []
 		for i in prob:
-		    out.append(np.random.choice([1,0],p=[abs(i),abs(1-i)]))
+			out.append(np.random.normal(i,10))
 
 		return out # list of rewards for each arm/bamdit at a particular time step
 
 # Which action to take
 	def action(self):
 		prob = np.random.rand()
-		if self.steps == 0 or self.random == True:
+		if self.steps == 0 :
 		    return np.random.choice(self.no_bandit)
 
 		elif prob > self.eps or self.eps == 0:
@@ -63,7 +61,8 @@ class bandits():
 			prob = self.individual_prob()
 			print("True probability distribution for the stationary case",prob)
 
-			action_ = []
+			optimal_action = 0
+			optimal_action_total = []
 
 			for i in range(self.no_iter):
 
@@ -71,26 +70,29 @@ class bandits():
 				reward = self.distri_depen_rewa(prob)[action]
 
 				self.steps += 1
-				self.individual_steps[action] += 1
+				self.individual_steps[action] +=1 
 
 				self.reward_after_each_step.append((self.total_reward))
 
 				if self.weighted_aver == True:
-					self.total_reward += (reward - self.total_reward)*(self.alpha)
-					self.individual_mean[action] += (reward - self.individual_mean[action])*(self.alpha)
+					self.total_reward += (reward - (self.total_reward))*(self.alpha)
+					self.individual_mean[action] += (reward - self.individual_mean[action])/(self.individual_steps[action])
 
 				else: 
-					self.total_reward += (reward - self.total_reward)/(self.steps)
+					self.total_reward += (reward - (self.total_reward))/(self.steps)
 					self.individual_mean[action] += (reward - self.individual_mean[action])/(self.individual_steps[action])
-				
-				action_.append(action)
+
+				if self.reward_after_each_step[i-1] <= self.reward_after_each_step[i]:
+					optimal_action +=1
 			    
+				optimal_action_total.append(optimal_action/self.steps)
 		        
-			return self.reward_after_each_step, self.individual_mean, action_
+			return self.reward_after_each_step, self.individual_mean, optimal_action_total
 
-		else:
+		elif self.stationary == False:
 
-			action_ = []
+			optimal_action = 0
+			optimal_action_total = []
 
 			for i in range(self.no_iter):
 
@@ -104,19 +106,21 @@ class bandits():
 				self.reward_after_each_step.append((self.total_reward))
 
 				if self.weighted_aver == True:
-					self.total_reward += (reward - self.total_reward)*(self.alpha)
-					self.individual_mean[action] += (reward - self.individual_mean[action])*(self.alpha)
-
-				else: 
-					self.total_reward += (reward - self.total_reward)/(self.steps)
+					self.total_reward += (reward - (self.total_reward))*(self.alpha)
 					self.individual_mean[action] += (reward - self.individual_mean[action])/(self.individual_steps[action])
 
-				self.individual_mean[action] += (reward - self.individual_mean[action])/(self.individual_steps[action])
+				else: 
+					self.total_reward += (reward - (self.total_reward))/(self.steps)
+					self.individual_mean[action] += (reward - self.individual_mean[action])/(self.individual_steps[action])
 				
-				action_.append(action)
+				if self.reward_after_each_step[i-1] <= self.reward_after_each_step[i]:
+					optimal_action +=1
 			    
+				optimal_action_total.append(optimal_action/self.steps)
 		        
-			return self.reward_after_each_step, self.individual_mean, action_
+			return self.reward_after_each_step, self.individual_mean, optimal_action_total
+
+		else: raise NotImplementedError
 		        
 			
 		    
